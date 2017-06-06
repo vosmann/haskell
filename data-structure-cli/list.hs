@@ -28,21 +28,19 @@ instance Monad ST where
     -- (>>=) :: ST a -> (a -> ST b) -> ST b
     st >>= f = S(\s -> let (x, s') = app st s in app (f x) s')
 
--- Add new element to list of strings and return the added element.
--- add :: String -> [String] -> ([String], [String])
 add :: String -> ST [String]
-add x = S(\ys -> ([x], x:ys))
--- todo: iterate a single addition instead of using a (++)
+add x = S(\ys -> (x:ys,x:ys))
 
 remove :: String -> ST [String]
-remove x = S(\xs -> partition (/=x) xs)
+remove x = S(\xs -> let ys = filter (/=x) xs in (ys,ys))
+           
 
 partition :: (a -> Bool) -> [a] -> ([a], [a])
 partition p xs = part p ([],[]) xs
                  where part p (ts,fs)     [] = (ts,fs)
                        part p (ts,fs) (x:xs) = if p x then part p (x:ts,fs) xs else part p (ts,x:fs) xs
 
-list :: [String] -> IO()
+list :: [String] -> IO [String]
 list state = do putStr "Enter command ('add' or 'remove'): "
                 command <- getLine
                 case command of
@@ -50,14 +48,14 @@ list state = do putStr "Enter command ('add' or 'remove'): "
                                    putStr "Enter new element: "
                                    new <- add element state
                                    putStr "New state: " ++ new
-                                   list
+                                   list new
                     "remove" -> do element <- getLine
                                    putStr "Enter element to remove: "
                                    new <- remove element state
                                    putStr "New state: " ++ new
-                                   list
+                                   list new
                     _        -> do putStr "Unsupported command."
-                                   list
+                                   list state
 
 run :: IO()
 run = list []
