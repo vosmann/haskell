@@ -47,15 +47,20 @@ list state = do putStr "Enter command ('add' or 'remove'): "
                     "add"    -> do element <- getLine
                                    putStr "Enter new element: "
                                    new <- add element state
-                                   putStr "New state: " ++ new
+                                   putStrLn "New state: "
+                                   putStrLn new
                                    list new
                     "remove" -> do element <- getLine
                                    putStr "Enter element to remove: "
                                    new <- remove element state
-                                   putStr "New state: " ++ new
+                                   putStrLn "New state: "
+                                   putStrLn new
                                    list new
-                    _        -> do putStr "Unsupported command."
+                    _        -> do putStrLn "Unsupported command."
                                    list state
 
-run :: IO()
+-- state can be threaded through recursive calls, no state monad necessary
+run :: IO [String]
 run = list []
+
+
