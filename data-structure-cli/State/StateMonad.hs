@@ -1,3 +1,12 @@
+module State.StateMonad (
+    State,
+    get,
+    put,
+    modify,
+    evalState,
+    execState
+) where
+
 import Control.Applicative
 
 -- State monad 1
@@ -83,7 +92,6 @@ instance Monad (State s) where
     -- (>>=) :: State a -> (a -> State b) -> State b
     st >>= f = State (\s -> let (x, s') = runState st s in runState (f x) s')
 
-
 -- Emits the entire state.
 get :: State s s
 get = State (\s -> (s, s))
@@ -103,8 +111,3 @@ evalState act = fst . runState act
 -- Retrieves state, given a state.
 execState :: State s a -> s -> s
 execState act = snd . runState act
-
-
-
-
-
