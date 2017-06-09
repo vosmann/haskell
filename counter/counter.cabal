@@ -8,7 +8,7 @@ synopsis:            Counts achievements.
 homepage:            none
 license:             MIT
 author:              vosmann
-maintainer:          vosmann@gmail.com
+-- maintainer:
 -- copyright:           
 -- category:            
 build-type:          Simple

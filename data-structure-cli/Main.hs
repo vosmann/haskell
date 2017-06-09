@@ -7,13 +7,13 @@ main = run []
 
 run :: [String] ->  IO ()
 run s = do putStrLn "Command"
-              command <- getLine
-              putStrLn "Element: "
-              element <- getLine
-              let s' = mutate command element s
-              putStrLn "New state: "
-              putStrLn (show s')
-              sranje s'
+           command <- getLine
+           putStrLn "Element: "
+           element <- getLine
+           let s' = mutate command element s
+           putStrLn "New state: "
+           putStrLn (show s')
+           run s'
 
 mutate cmd elem s = execState statemonad s 
                       where statemonad = case cmd of
