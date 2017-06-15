@@ -2,8 +2,8 @@ module Main where
 
 import State.StateMonad
 
-import Data.Set (Set)
-import qualified Data.Set as Set
+--import Data.Set (Set)
+--import qualified Data.Set as Set
 
 --import Data.HashMap.Strict (HashMap)
 --import qualified Data.HashMap.Strict as HashMap
@@ -20,32 +20,20 @@ import qualified Data.Set as Set
 --           * remove k v
 --           * use Hashable to autogenerate k
 
---  Data structure (list, set, hash map)?
---  Command?
---  Element?
-
 main :: IO ()
 main = run []
 
+collectLn :: String -> IO String
+collectLn text = do putStr text
+                    getLine
+
+-- With a state monad.
 run :: [String] ->  IO ()
 run s = do command <- collectLn "Command: "
            element <- collectLn "Element: "
            let s' = mutate command element s
            putStrLn $ "  State: " ++ (show s')
            run s'
-
-{-
-run' :: Set String ->  IO ()
-run' s = do command <- collectLn "Command: "
-            element <- collectLn "Element: "
-           let s' = mutate command element s
-           putStrLn $ "  State: " ++ (show s')
-            run' s
--}
-
-collectLn :: String -> IO String
-collectLn text = do putStr text
-                    getLine
 
 mutate :: Eq a => String -> a -> [a] -> [a]
 mutate cmd elem s = execState statemonad s 
@@ -55,14 +43,24 @@ mutate cmd elem s = execState statemonad s
                                     _     -> id
                             statemonad = modify f
 
-{-
--- Would work if the b type would be abstracted to a monoid that also supports a remove operation.
--- stateModifiers :: Eq a => [(String, [(String, a -> b)])]
-stateModifiers = [("list", [("add", (:)),
-                            ("rem", \x -> filter (/=x))]),
-                  ("set",  [("add", ),
-                            ("rem", )]),
-                  ("map",  [("add", ),
-                            ("rem", )])]
--}
+-- Without a state monad.
+runWithoutStateMonad :: [String] ->  IO ()
+runWithoutStateMonad s = do putStrLn $ "  State: " ++ (show s)
+                            command <- collectLn "Command: "
+                            element <- collectLn "Element: "
+                            let s' = mutateWithoutStateMonad command element s
+                            runWithoutStateMonad s'
 
+
+mutateWithoutStateMonad :: Eq a => String -> a -> [a] -> [a]
+mutateWithoutStateMonad cmd elem s = case cmd of
+                                         "add" -> (elem:s)
+                                         "rem" -> filter (/=elem) s
+                                         _     -> s
+
+{-
+x :: Set Int
+x = Set.fromList [1,2,3,4]
+y :: Set Int
+y = Set.insert 4 $ Set.insert 5 $ Set.empty
+-}
