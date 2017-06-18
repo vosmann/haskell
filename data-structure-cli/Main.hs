@@ -1,6 +1,7 @@
 module Main where
 
-import State.StateMonad
+--import State.StateMonad
+import Control.Monad.State
 
 --import Data.Set (Set)
 --import qualified Data.Set as Set
@@ -57,6 +58,30 @@ mutateWithoutStateMonad cmd elem s = case cmd of
                                          "add" -> (elem:s)
                                          "rem" -> filter (/=elem) s
                                          _     -> s
+
+-- With a monad transformer.
+runWithMndTrnsfrm :: [String] ->  StateT [String] IO ()
+runWithMndTrnsfrm s = do lift $ putStrLn $ "  State: " ++ (show s)
+                         command <- lift $ collectLn "Command: "
+                         element <- lift $ collectLn "Element: "
+                         runWithMndTrnsfrm (execState (statemonad command element) s)
+
+runWithMndTrnsfrm' :: [String] ->  StateT [String] IO ()
+runWithMndTrnsfrm' = do 
+                        command <- lift $ collectLn "Command: "
+                        element <- lift $ collectLn "Element: "
+                        s <- statemonad command element
+                        lift $ putStrLn $ "  State: " ++ (show s)
+                        runWithMndTrnsfrm'
+
+
+statemonad :: Eq a => String -> a -> State [a] ()
+statemonad cmd elem = modify f
+                          where f = case cmd of
+                                        "add" -> (elem:)
+                                        "rem" -> filter (/=elem)
+                                        _     -> id
+
 
 {-
 x :: Set Int
