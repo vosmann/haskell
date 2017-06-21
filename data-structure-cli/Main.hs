@@ -60,28 +60,22 @@ mutateWithoutStateMonad cmd elem s = case cmd of
                                          _     -> s
 
 -- With a monad transformer.
-runWithMndTrnsfrm :: [String] ->  StateT [String] IO ()
-runWithMndTrnsfrm s = do lift $ putStrLn $ "  State: " ++ (show s)
-                         command <- lift $ collectLn "Command: "
-                         element <- lift $ collectLn "Element: "
-                         runWithMndTrnsfrm (execState (statemonad command element) s)
+runLoop s = execStateT runWithMonadTransformer s
 
-runWithMndTrnsfrm' :: [String] ->  StateT [String] IO ()
-runWithMndTrnsfrm' = do 
-                        command <- lift $ collectLn "Command: "
-                        element <- lift $ collectLn "Element: "
-                        s <- statemonad command element
-                        lift $ putStrLn $ "  State: " ++ (show s)
-                        runWithMndTrnsfrm'
+runWithMonadTransformer :: StateT [String] IO ()
+runWithMonadTransformer = do command <- lift $ collectLn "Command: "
+                             element <- lift $ collectLn "Element: "
+                             statemonad command element
+                             s <- get
+                             lift $ putStrLn $ "  State: " ++ (show s)
+                             runWithMonadTransformer
 
-
-statemonad :: Eq a => String -> a -> State [a] ()
+statemonad :: Eq a => String -> a -> StateT [a] IO ()
 statemonad cmd elem = modify f
                           where f = case cmd of
                                         "add" -> (elem:)
                                         "rem" -> filter (/=elem)
                                         _     -> id
-
 
 {-
 x :: Set Int
