@@ -37,13 +37,14 @@ main = do
 -}
 
 -- app :: IORef [a] -> (Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived)
-app :: IORef [a] -> Application
+app :: IORef [String] -> Application
 app list request respond = do let params = queryString request
                               let respString = pack $ show params
                               putStrLn $ "Query params: " ++ (show params)
-                              l <- lift $ inc list
-                              --l <- inc list
-                              liftIO $ print' l
+                              --l <- lift $ inc list
+                              l <- inc list
+                              --liftIO $ print' l
+                              putStrLn $ show l
                               respond $ responseLBS status200 [("Content-Type", "text/plain")] respString
 
 main :: IO ()
@@ -51,11 +52,11 @@ main = do putStrLn $ "Listening on port " ++ show 8080
           list <- newIORef []
           run 8080 (app list)
 
-inc :: (Num a, Show a) => IORef [a] -> IO [a]
-inc list = atomicModifyIORef list (\s -> (1:s, s))
+inc :: IORef [String] -> IO [String]
+inc list = atomicModifyIORef list (\s -> ("lol":s, s))
 
-print' :: (Show a) => a -> IO ()
-print' x = do putStrLn $ "New state: " ++ show x
+--print' :: (Show a) => a -> IO ()
+--print' x = do putStrLn $ "New state: " ++ show x
 
 --mutate :: Eq a => String -> a -> [a] -> [a]
 --mutate cmd elem s = case cmd of
