@@ -24,7 +24,7 @@ app :: IORef [ByteString] -> Application
 app listRef request respond = do putStrLn $ logged request
                                  let cmd = param request "command"
                                      elem = param request "element"
-                                 list <- inc cmd elem listRef
+                                 list <- modify cmd elem listRef
                                  putStrLn $ concat list
                                  respond $ responseLBS status200
                                                        [("Content-Type", "text/plain")]
@@ -37,12 +37,11 @@ logged req = concat [requestMethod req,
 -- queryString returns [(ByteString, Maybe ByteString)], i.e. strict, not lazy.
 param req name = join (lookup name (queryString req))
 
-inc :: Maybe ByteString -> Maybe ByteString -> IORef [ByteString] -> IO [ByteString]
-inc cmd elem = modify f
-               where f = chooseMod cmd elem 
-                     modify f list = atomicModifyIORef list (\s -> (f s, f s))
+modify :: Maybe ByteString -> Maybe ByteString -> IORef [ByteString] -> IO [ByteString]
+modify cmd elem list = atomicModifyIORef list (\s -> (op s, op s))
+                       where op = selectOperation cmd elem 
 
-chooseMod :: Maybe ByteString -> Maybe ByteString -> ([ByteString] -> [ByteString])
-chooseMod (Just "add") (Just elem) = (\xs -> elem:xs)
-chooseMod (Just "rem") (Just elem) = (\xs -> Prelude.filter (/=elem) xs)
-chooseMod _            _           = id
+selectOperation :: Maybe ByteString -> Maybe ByteString -> ([ByteString] -> [ByteString])
+selectOperation (Just "add") (Just elem) = (\xs -> elem:xs)
+selectOperation (Just "rem") (Just elem) = (\xs -> Prelude.filter (/=elem) xs)
+selectOperation _            _           = id
