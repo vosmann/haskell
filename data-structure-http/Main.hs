@@ -7,12 +7,10 @@ import Network.Wai.Handler.Warp (run)
 import Prelude hiding (map, concat, putStrLn)
 
 import Data.IORef (IORef, newIORef, atomicModifyIORef)
---import Data.ByteString.Lazy.Char8 (pack, unpack)
--- Wai uses strict ByteStrings.
-import Data.ByteString
+import Data.ByteString -- Strict.
 import Data.ByteString.Lazy (fromChunks)
+
 import Control.Monad (join)
-import Control.Monad.Trans (liftIO, lift)
 
 default (ByteString)
 
@@ -27,17 +25,16 @@ app listRef request respond = do putStrLn $ logged request
                                  let cmd = param request "command"
                                      elem = param request "element"
                                  list <- inc cmd elem listRef
-                                 putStrLn $ concat list -- show for bytestrings?
+                                 putStrLn $ concat list
                                  respond $ responseLBS status200
                                                        [("Content-Type", "text/plain")]
                                                        (fromChunks list)
 
--- show for bytestrings?
 logged req = concat [requestMethod req,
                      rawPathInfo req,
                      rawQueryString req]
 
--- queryString returns [(ByteString, Maybe ByteString)], i.e. strict ByteStrings.
+-- queryString returns [(ByteString, Maybe ByteString)], i.e. strict, not lazy.
 param req name = join (lookup name (queryString req))
 
 inc :: Maybe ByteString -> Maybe ByteString -> IORef [ByteString] -> IO [ByteString]
