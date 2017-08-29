@@ -4,16 +4,16 @@ import Control.Monad.Identity
 -- Monad transformers are a form of aspect-oriented programming.
 
 --
-test1 = do
-            a <- get
-            modify (+1)
-            b <- get
-            return (a,b)
-test2 = do
-            a <- get
-            modify (++"1")
-            b <- get
-            return (a,b)
+test1 = do a <- get
+           modify (+1)
+           b <- get
+           return (a,b)
+
+test2 = do a <- get
+           modify (++"1")
+           b <- get
+           return (a,b)
+
 go1 = evalState test1 0
 go2 = evalState test2 "0" 
 
